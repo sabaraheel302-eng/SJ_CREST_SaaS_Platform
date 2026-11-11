@@ -1,0 +1,11 @@
+node_modules/
+.next/
+src/generated/prisma/
+out/
+dist/
+.env
+.env.*
+!.env.example
+*.log
+coverage/
+prisma/migrations/**/migration_lock.toml

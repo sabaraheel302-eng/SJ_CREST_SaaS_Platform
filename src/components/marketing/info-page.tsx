@@ -1,0 +1,21 @@
+import Link from "next/link";
+import { ArrowLeft, ArrowRight, Check } from "lucide-react";
+import { RequestForm } from "@/components/marketing/request-form";
+
+const content: Record<string, { title: string; eyebrow: string; intro: string; points: string[] }> = {
+  product: { eyebrow: "The CellOn workspace", title: "The whole shop, in one clear view.", intro: "CellOn brings your inventory, IMEI records, purchases, sales and business reports into one connected workspace, designed for mobile retailers and distributors.", points: ["Trace each device by IMEI from receiving to sale", "Keep stock and branch movements visible", "Bring invoices, customer balances and reports together"] },
+  features: { eyebrow: "Made for mobile retail", title: "The details that keep a shop moving.", intro: "Spend less time switching between registers and spreadsheets. Give your team a consistent view of stock and day-to-day business activity.", points: ["IMEI-aware inventory", "Sales, POS and purchase workflows", "Customer and supplier ledgers", "Expenses and practical business reports"] },
+  pricing: { eyebrow: "Plans for your shop", title: "Start with what you need today.", intro: "Basic, Plus and Pro plans support different shop sizes. Our team will help configure the right plan and limits for your business.", points: ["Basic for a single shop", "Plus for teams and multiple branches", "Pro for advanced reporting and support"] },
+  about: { eyebrow: "About CellOn", title: "Built around the work behind every sale.", intro: "Mobile retail moves quickly. CellOn is being built to make the operational details easier to track, from a device’s arrival through its final sale.", points: ["Clear workflows for shop owners and staff", "Business data separated by shop", "A guided onboarding process"] },
+  contact: { eyebrow: "Talk with our team", title: "We’re here to help you get started.", intro: "Ask about a demo, account setup, or which plan fits your shop. Send a note and our team will follow up.", points: ["Email: hello@cellon.example", "Phone: +92 300 000 0000", "WhatsApp: Configure your preferred business contact"] },
+};
+
+export function InfoPage({ page }: { page: string }) {
+  const item = content[page];
+  return <main className="min-h-screen py-12 sm:py-16"><div className="wrap"><Link href="/" className="inline-flex items-center gap-2 text-[13px] text-[#62766c]"><ArrowLeft size={15}/> Back to home</Link><div className="mx-auto mt-12 max-w-[760px]"><span className="eyebrow">{item.eyebrow}</span><h1 className="mt-4 text-[clamp(38px,6vw,64px)] font-bold leading-[1.02] tracking-[-.05em]">{item.title}</h1><p className="mt-5 text-[16px] leading-7 text-[#657870]">{item.intro}</p><div className="card mt-8 p-6 sm:p-8"><ul className="space-y-4">{item.points.map(point=><li key={point} className="flex items-start gap-3 text-[14px] leading-6 text-[#52675d]"><span className="mt-0.5 grid size-5 place-items-center rounded-full bg-[#e2f3e9] text-[#0b766e]"><Check size={13}/></span>{point}</li>)}</ul><div className="mt-8 flex flex-wrap gap-3"><Link href="/demo" className="btn btn-primary">Book a free demo <ArrowRight size={15}/></Link><Link href="/request-account" className="btn btn-secondary">Request an account</Link></div></div></div></div></main>;
+}
+
+export function RequestPage({ kind }: { kind: "account" | "demo" }) {
+  const demo = kind === "demo";
+  return <main className="min-h-screen py-12 sm:py-16"><div className="wrap"><Link href="/" className="inline-flex items-center gap-2 text-[13px] text-[#62766c]"><ArrowLeft size={15}/> Back to home</Link><div className="mx-auto mt-10 grid max-w-[970px] items-start gap-9 lg:grid-cols-[.75fr_1.25fr]"><div className="pt-3"><span className="eyebrow">{demo ? "See CellOn in action" : "Start a conversation"}</span><h1 className="mt-4 text-[clamp(36px,5vw,54px)] font-bold leading-[1.02] tracking-[-.05em]">{demo ? "A closer look at a calmer shop day." : "Tell us about your business."}</h1><p className="mt-4 text-[14px] leading-6 text-[#657870]">{demo ? "Share a few details and our team will arrange a personal walkthrough around your shop’s needs." : "Send an account request. Our team will review your details and follow up with next steps."}</p></div><RequestForm kind={kind}/></div></div></main>;
+}

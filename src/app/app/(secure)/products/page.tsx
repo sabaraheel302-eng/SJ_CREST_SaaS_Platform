@@ -1,0 +1,16 @@
+import Link from "next/link";
+import { currentCustomerMembership } from "@/lib/security/session";
+import { db } from "@/lib/db";
+
+export default async function ProductsPage() {
+  const membership = await currentCustomerMembership();
+  if (!membership) return null;
+  const plan = membership.tenant.subscriptions[0]?.plan;
+  if (!plan?.features.some((feature) => feature.key === "inventory" && feature.enabled)) return <section className="card p-7"><p className="eyebrow">Plan access</p><h1 className="mt-2 text-2xl font-bold">Inventory is not included in your current plan.</h1><p className="mt-2 text-[13px] text-[#75857e]">Contact your platform administrator to review plan access.</p></section>;
+  const canRead = membership.role.name === "Owner" || membership.role.permissions.some((entry) => entry.permission.key === "inventory:read");
+  if (!canRead) return <section className="card p-7"><h1 className="text-2xl font-bold">Inventory access is restricted.</h1><p className="mt-2 text-[13px] text-[#75857e]">Ask your shop owner to grant inventory read access.</p></section>;
+  const branchFilter = membership.branchId ? { branchId: membership.branchId } : {};
+  const products = await db.product.findMany({ where: { tenantId: membership.tenantId, archivedAt: null }, orderBy: { name: "asc" }, take: 100, include: { _count: { select: { imeis: { where: { status: "IN_STOCK", ...branchFilter } } } } } });
+  const canCreate = membership.role.name === "Owner" || membership.role.permissions.some((entry) => entry.permission.key === "inventory:create");
+  return <><div className="flex flex-wrap items-end justify-between gap-4"><div><p className="eyebrow">Inventory catalog</p><h1 className="mt-2 text-3xl font-bold tracking-tight">Products</h1><p className="mt-2 text-[13px] text-[#75857e]">Products and models for {membership.tenant.name}.</p></div>{canCreate&&<Link href="/app/products/new" className="btn btn-primary">Add product</Link>}</div><div className="card mt-6 overflow-hidden"><div className="grid grid-cols-[1.4fr_.8fr_.8fr_.7fr] gap-3 border-b border-[#e9efeb] bg-[#fafcf9] px-5 py-3 text-[10px] font-bold uppercase tracking-wider text-[#89978f]"><span>Product</span><span>SKU / Brand</span><span>IMEI tracking</span><span>In stock</span></div>{products.length?products.map((product)=><Link key={product.id} href={`/app/products/${product.id}`} className="grid grid-cols-[1.4fr_.8fr_.8fr_.7fr] gap-3 border-b border-[#edf1ed] px-5 py-4 text-[12px] last:border-0 hover:bg-[#f8fbf8]"><span><strong className="block text-[13px]">{product.name}</strong><span className="text-[#8a9991]">{product.category??"Uncategorized"}</span></span><span>{product.sku??"—"}<span className="block text-[#8a9991]">{product.brand??""}</span></span><span>{product.trackImei?"Tracked":"Standard stock"}</span><span>{product.trackImei?product._count.imeis:"—"}</span></Link>):<div className="p-9 text-center"><h2 className="font-bold">No products yet</h2><p className="mt-2 text-[13px] text-[#839189]">Add your shop’s products to start building the inventory catalog.</p>{canCreate&&<Link href="/app/products/new" className="btn btn-primary mt-4">Add your first product</Link>}</div>}</div><p className="mt-3 text-[11px] text-[#9aa69f]">Showing up to 100 products. Inventory is always scoped to your authenticated shop.</p></>;
+}
